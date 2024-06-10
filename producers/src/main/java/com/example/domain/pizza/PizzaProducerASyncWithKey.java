@@ -33,7 +33,7 @@ public class PizzaProducerASyncWithKey {
 		System.out.println("######### producer #########");
 		System.out.println(producer.metrics().get("buffer-memory"));
 
-		sendMessage(-1, 10, 100, 100, false, producer);
+		sendMessage(-1, 500, 0, 0, false, producer);
 
 		producer.close();
 	}
