@@ -2,7 +2,6 @@
 `kafka-topics --bootstrap-server localhost:9092 --create --topic <토픽이름>`
 - `--partitions <파티션갯수>` : 파티션 옵션 추가
 
-
 # 도픽 상세 정보 조회
 `kafka-topics --bootstrap-server localhost:9092 --describe --topic <토픽이름>`
 
