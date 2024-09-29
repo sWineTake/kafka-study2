@@ -1,9 +1,11 @@
 package com.group.integration.kafka.producer;
 
+import com.group.integration.aws.s3.S3Service;
 import com.group.integration.domain.dto.MultipartTopicDto;
 import com.group.integration.kafka.FailureTracker;
 import com.group.integration.kafka.RetryQueue;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.errors.InvalidTopicException;
 import org.apache.kafka.common.errors.RecordTooLargeException;
 import org.slf4j.Logger;
@@ -14,25 +16,34 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ProducerEvent {
 
-	private static final Logger logger = LoggerFactory.getLogger(ProducerEvent.class);
 	private final KafkaTemplate<String, MultipartTopicDto> kafkaTemplate;
 	private final FailureTracker failureTracker;
 	private final RetryQueue retryQueue;
+	private final S3Service s3Service;
 
 	public void send(String topic, MultipartTopicDto message) {
 		CompletableFuture<SendResult<String, MultipartTopicDto>> send = kafkaTemplate.send(topic, message.getKey(), message);
 		send.whenComplete((result, ex) -> {
 			// callBack 메서드
-			if (ex == null) {
-				// logger.info("메시지 전송 성공: topic=[{}], message=[{}], offset=[{}]", topic, message, result.getRecordMetadata().offset());
-				// 전송 성공의 경우에는 따로 로그를 남기지 않음
-			} else {
-				logger.error("메시지 전송 실패: topic=[{}], message=[{}], 에러=[{}]", topic, message, ex.getMessage());
-				handleFailure(topic, message, ex);
+			try {
+				if (ex == null) {
+					// logger.info("메시지 전송 성공: topic=[{}], message=[{}], offset=[{}]", topic, message, result.getRecordMetadata().offset());
+					// 전송 성공의 경우에는 따로 로그를 남기지 않음
+				} else {
+					log.error("메시지 전송 실패: topic=[{}], message=[{}], 에러=[{}]", topic, message, ex.getMessage());
+					handleFailure(topic, message, ex);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				// S3적재
+				boolean isError = ex == null;
+				s3Service.storeLog(topic, message.toString(), isError);
 			}
 		});
 	}
