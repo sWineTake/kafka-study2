@@ -30,7 +30,6 @@ public class ProducerEvent {
 			if (ex == null) {
 				// logger.info("메시지 전송 성공: topic=[{}], message=[{}], offset=[{}]", topic, message, result.getRecordMetadata().offset());
 				// 전송 성공의 경우에는 따로 로그를 남기지 않음
-				handleFailure(topic, message, ex);
 			} else {
 				logger.error("메시지 전송 실패: topic=[{}], message=[{}], 에러=[{}]", topic, message, ex.getMessage());
 				handleFailure(topic, message, ex);
@@ -40,9 +39,9 @@ public class ProducerEvent {
 
 	private void handleFailure(String topic, MultipartTopicDto message, Throwable ex) {
 		failureTracker.recordFailure(topic, message, ex);
-		//if (shouldRetry(ex)) {
+		if (shouldRetry(ex)) {
 			retryQueue.addForRetry(topic, message);
-		//}
+		}
 	}
 
 	private boolean shouldRetry(Throwable ex) {
