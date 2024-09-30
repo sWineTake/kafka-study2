@@ -1,3 +1,4 @@
+/*
 package com.group.integration.config;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -29,3 +30,4 @@ public class AmazonS3Config {
 			.build();
 	}
 }
+*/

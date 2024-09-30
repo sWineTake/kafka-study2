@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<springProperty scope="context" name="bucketName" source="logging.bucket.name"/>
+	<springProperty scope="context" name="accessKey" source="cloud.aws.credentials.access-key"/>
+	<springProperty scope="context" name="secretKey" source="cloud.aws.credentials.secret-key"/>
+	<springProperty scope="context" name="region" source="cloud.aws.region.static"/>
+
+	<appender name="S3" class="com.group.integration.aws.s3.S3LogAppender">
+		<bucketName>${bucketName}</bucketName>
+		<region>${region}</region>
+		<accessKey>${accessKey}</accessKey>
+		<secretKey>${secretKey}</secretKey>
+	</appender>
+
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<root level="INFO">
+		<appender-ref ref="S3" />
+		<appender-ref ref="CONSOLE" />
+	</root>
+</configuration>

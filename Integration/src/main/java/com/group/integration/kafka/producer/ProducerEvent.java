@@ -1,6 +1,5 @@
 package com.group.integration.kafka.producer;
 
-import com.group.integration.aws.s3.S3Service;
 import com.group.integration.domain.dto.MultipartTopicDto;
 import com.group.integration.kafka.FailureTracker;
 import com.group.integration.kafka.RetryQueue;
@@ -24,7 +23,6 @@ public class ProducerEvent {
 	private final KafkaTemplate<String, MultipartTopicDto> kafkaTemplate;
 	private final FailureTracker failureTracker;
 	private final RetryQueue retryQueue;
-	private final S3Service s3Service;
 
 	public void send(String topic, MultipartTopicDto message) {
 		CompletableFuture<SendResult<String, MultipartTopicDto>> send = kafkaTemplate.send(topic, message.getKey(), message);
@@ -43,7 +41,8 @@ public class ProducerEvent {
 			} finally {
 				// S3적재
 				boolean isError = ex == null;
-				s3Service.storeLog(topic, message.toString(), isError);
+				log.info("S3적재: topic=[{}], message=[{}], isError=[{}]", topic, message, isError);
+				// s3Service.storeLog(topic, message.toString(), isError);
 			}
 		});
 	}
